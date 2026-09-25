@@ -116,8 +116,8 @@
     silk: [0.3, 0.08], lace: [0.5, 0.02], metal: [0.22, 1], glass: [0.02, 0], darkglass: [0.08, 0.85]
   };
   const cache = new Map();
-  function material(mode, role, hex) {
-    const k = mode + '|' + role + '|' + hex;
+  function material(mode, role, hex, skinned) {
+    const k = mode + '|' + role + '|' + hex + '|' + !!skinned;
     if (cache.has(k)) return cache.get(k);
     const color = new THREE.Color(hex).convertSRGBToLinear();
     let m;
@@ -137,33 +137,75 @@
         ? new THREE.MeshPhysicalMaterial({ color, roughness: 0.02, metalness: 0, transparent: true, opacity: 0.45, clearcoat: 1 })
         : new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: metal, envMapIntensity: role === 'skin' ? 0.55 : 0.8 });
     }
-    if (role === 'hair' || role === 'cloth' || role === 'silk' || role === 'lace' || role === 'denim' || role === 'leather') m.side = THREE.DoubleSide;
+    if (!skinned && (role === 'cloth' || role === 'leather')) m.side = THREE.DoubleSide;
+    m.skinning = !!skinned;
     cache.set(k, m);
     return m;
   }
-  const inkMat = new THREE.ShaderMaterial({
-    uniforms: { uW: { value: 0.0017 }, uC: { value: new THREE.Color(0x0b0b0c) } },
-    vertexShader: 'uniform float uW; void main(){ gl_Position = projectionMatrix * modelViewMatrix * vec4(position + normal * uW, 1.); }',
-    fragmentShader: 'uniform vec3 uC; void main(){ gl_FragColor = vec4(uC, 1.); }',
-    side: THREE.BackSide
+  const inkMats = [false, true].map(skinned => {
+    const m = new THREE.MeshBasicMaterial({ color: 0x0b0b0c, side: THREE.BackSide });
+    m.skinning = skinned;
+    m.onBeforeCompile = sh => {
+      sh.vertexShader = sh.vertexShader.replace('#include <begin_vertex>', 'vec3 transformed = vec3(position) + normal * 0.0016;');
+    };
+    m.customProgramCacheKey = () => 'ink-' + skinned;
+    return m;
   });
+
+  // dissolve: garments burn away along a noisy sweep with a glowing cream edge
+  const DISSOLVE_COMMON = `
+    varying vec3 vObj;
+    uniform float uCut; uniform float uY0; uniform float uY1; uniform float uDir;
+    float dh(vec3 p){ return fract(sin(dot(p, vec3(12.9898, 78.233, 37.719))) * 43758.5453); }
+    float dn(vec3 p){ vec3 i = floor(p), f = fract(p); f = f*f*(3.-2.*f);
+      return mix(mix(mix(dh(i), dh(i+vec3(1,0,0)), f.x), mix(dh(i+vec3(0,1,0)), dh(i+vec3(1,1,0)), f.x), f.y),
+                 mix(mix(dh(i+vec3(0,0,1)), dh(i+vec3(1,0,1)), f.x), mix(dh(i+vec3(0,1,1)), dh(i+vec3(1,1,1)), f.x), f.y), f.z); }
+    float dissolveField(){
+      float yn = clamp((vObj.y - uY0) / max(uY1 - uY0, 1e-4), 0., 1.);
+      float sweep = uDir > 0.5 ? yn : (uDir < -0.5 ? 1. - yn : 0.5);
+      float n = dn(vObj * 90.) * .6 + dn(vObj * 260.) * .4;
+      return sweep * .62 + n * .38;
+    }`;
+  function dissolvable(base, g, m) {
+    const fm = base.clone();
+    fm.skinning = base.skinning;
+    const bb = (m.geometry.boundingBox || (m.geometry.computeBoundingBox(), m.geometry.boundingBox));
+    fm.userData.u = {
+      uCut: { value: 0 }, uY0: { value: bb.min.y }, uY1: { value: bb.max.y },
+      uDir: { value: g.dir === 'up' ? 1 : g.dir === 'down' ? -1 : 0 }
+    };
+    fm.onBeforeCompile = sh => {
+      Object.assign(sh.uniforms, fm.userData.u);
+      sh.vertexShader = sh.vertexShader
+        .replace('#include <common>', '#include <common>\nvarying vec3 vObj;')
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvObj = position;');
+      sh.fragmentShader = sh.fragmentShader
+        .replace('#include <common>', '#include <common>\n' + DISSOLVE_COMMON)
+        .replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\nfloat dF = dissolveField(); if (dF < uCut * 1.08 - 0.04) discard;')
+        .replace('#include <dithering_fragment>', '#include <dithering_fragment>\nfloat dE = 1. - smoothstep(0., 0.045, dF - (uCut * 1.08 - 0.04)); gl_FragColor.rgb += vec3(1.0, 0.86, 0.62) * dE * 2.2 * step(0.001, uCut);');
+    };
+    fm.customProgramCacheKey = () => 'dissolve-' + base.type + '-' + base.skinning;
+    return fm;
+  }
 
   // ---------- figures ----------
   const figures = CHARACTERS.map(def => {
     const f = Figure.build(def);
-    f.root.scale.setScalar(def.height);
     f.meshes = [];
     f.root.traverse(o => { if (o.isMesh) f.meshes.push(o); });
+    f.faceMat = new THREE.MeshBasicMaterial({ map: f.faceTex.open, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, color: 0xeeeeee });
+    f.faceMat.skinning = true;
     for (const o of f.meshes) {
-      if (FLAT[o.userData.role]) continue;
-      const ink = new THREE.Mesh(o.geometry, inkMat);
+      if (FLAT[o.userData.role] || o.userData.role === 'face') continue;
+      const ink = o.isSkinnedMesh ? new THREE.SkinnedMesh(o.geometry, inkMats[1]) : new THREE.Mesh(o.geometry, inkMats[0]);
+      if (o.isSkinnedMesh) { ink.frustumCulled = false; ink.bind(o.skeleton, o.bindMatrix); o.parent.add(ink); } else o.add(ink);
       ink.visible = false;
       ink.raycast = () => {};
-      o.add(ink);
       o.userData.ink = ink;
     }
     f.cur = {};
     for (const b in f.bones) f.cur[b] = [0, 0, 0];
+    f.bones.uArmL.rotation.z = 0.25; f.bones.uArmR.rotation.z = -0.25;
     f.blink = 2 + Math.random() * 3;
     return f;
   });
@@ -178,8 +220,9 @@
   function applyMode(f) {
     for (const m of f.meshes) {
       const g = m.userData.garment;
-      if (!g || g.anim == null) m.material = material(state.mode, m.userData.role, m.userData.color);
-      if (m.userData.ink) m.userData.ink.visible = state.mode === 'toon' && (!g || (g.on && g.anim == null));
+      if (m.userData.role === 'face') { m.material = f.faceMat; m.visible = state.mode !== 'chrome'; continue; }
+      if (!g || g.anim == null) m.material = material(state.mode, m.userData.role, m.userData.color, m.isSkinnedMesh);
+      if (m.userData.ink) m.userData.ink.visible = state.mode === 'toon' && m.visible && (!g || (g.on && g.anim == null));
     }
   }
 
@@ -196,8 +239,7 @@
     g.clock = 0;
     for (const m of g.meshes) {
       if (m.userData.fade) m.userData.fade.dispose();
-      const fm = material(state.mode, m.userData.role, m.userData.color).clone();
-      fm.transparent = true;
+      const fm = dissolvable(material(state.mode, m.userData.role, m.userData.color, m.isSkinnedMesh), g, m);
       m.userData.fade = fm;
       m.material = fm;
       m.visible = true;
@@ -208,22 +250,14 @@
   function stepGarments(f, dt) {
     for (const g of f.garments) {
       if (g.anim == null) continue;
-      g.clock += dt / (g.on ? 0.45 : 0.55);
+      g.clock += dt / (g.on ? 0.7 : 0.9);
       const k = Math.min(1, g.clock);
-      const e = 1 - Math.pow(1 - k, 3);
+      const e = k * k * (3 - 2 * k);
       const v = g.from + (g.to - g.from) * e;
-      const dir = g.dir === 'down' ? -1 : 1;
-      for (const m of g.meshes) {
-        m.userData.fade.opacity = v;
-        m.scale.copy(m.userData.baseScale).multiplyScalar(1 + (1 - v) * 0.12);
-        m.position.copy(m.userData.basePos);
-        m.position.y += dir * (1 - v) * 0.035;
-      }
+      for (const m of g.meshes) m.userData.fade.userData.u.uCut.value = 1 - v;
       if (k >= 1) {
         g.anim = null;
         for (const m of g.meshes) {
-          m.scale.copy(m.userData.baseScale);
-          m.position.copy(m.userData.basePos);
           m.visible = g.on;
           m.userData.fade.dispose();
           m.userData.fade = null;
@@ -478,12 +512,10 @@
     f.bones.head.rotation.y += Math.sin(t * 0.37 + 1) * 0.06 * m;
     f.bones.uArmL.rotation.z += Math.sin(t * 1.5 + 0.4) * 0.012 * m;
     f.bones.uArmR.rotation.z -= Math.sin(t * 1.5 + 0.4) * 0.012 * m;
-    f.back.rotation.x = -(f.bones.head.rotation.x + f.bones.neck.rotation.x + f.bones.chest.rotation.x) - 0.03 + Math.sin(t * 1.1) * 0.02 * m;
-
     f.blink -= dt;
-    const bl = f.blink < 0.12 ? Math.max(0.08, Math.abs(f.blink - 0.06) / 0.06) : 1;
+    const shut = f.blink < 0.11;
+    if (f.faceMat.map !== (shut ? f.faceTex.closed : f.faceTex.open)) f.faceMat.map = shut ? f.faceTex.closed : f.faceTex.open;
     if (f.blink < 0) f.blink = 2.5 + Math.random() * 3.5;
-    f.eyes.forEach(e => { e.scale.y = bl; });
 
     f.root.position.y = 0;
     f.root.updateMatrixWorld(true);

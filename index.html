@@ -81,7 +81,8 @@ button:focus-visible{outline:1px solid var(--bone);outline-offset:3px}
 
 .panel{position:absolute;left:calc(var(--gutter) + 44px);top:calc(17vh + clamp(64px,9vw,128px) + 60px);width:min(300px,34vw);
   background:var(--glass);backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px) saturate(1.2);
-  border:1px solid var(--line);border-radius:18px;padding:10px;display:grid;gap:2px}
+  border:1px solid var(--line);border-radius:18px;padding:10px;display:grid;gap:2px;
+  max-height:calc(100vh - 17vh - clamp(64px,9vw,128px) - 230px);overflow-y:auto;scrollbar-width:thin}
 .panel[hidden]{display:none!important}
 .row{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:10px;padding:10px 10px;border-radius:11px;text-align:left;transition:background .2s,opacity .3s}
 .row:hover,.row.hot{background:var(--glass-hi)}
@@ -225,6 +226,8 @@ button:focus-visible{outline:1px solid var(--bone);outline-offset:3px}
 
 <script>addEventListener('error', function () { var p = document.querySelector('#loader p'); if (p && !document.querySelector('#loader.done')) p.textContent = '3D could not start. Open in a browser with WebGL.'; });</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="js/models/nami.js"></script>
+<script src="js/models/robin.js"></script>
 <script src="js/figure.js"></script>
 <script src="js/app.js"></script>
 </body>

@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Just Play</title>
+<meta name="description" content="Хаб мини-игр для друзей: понг, четыре в ряд, реакция, мемори, змейка и крокодил на одном экране.">
+<meta name="theme-color" content="#060607">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500&family=Onest:wght@400;500;600;700&family=Unbounded:wght@600;700;900&display=swap">
+<link rel="stylesheet" href="css/hub.css">
+</head>
+<body>
+<div class="ambient" aria-hidden="true"><i></i><i></i><i></i></div>
+
+<header class="top" id="top">
+  <a class="brand" href="#hero" aria-label="Just Play, наверх">
+    <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5v19M3.8 7.25l16.4 9.5M3.8 16.75l16.4-9.5"/></svg>
+    <span class="brand-name"><b>just play</b><small>хаб мини-игр</small></span>
+  </a>
+  <nav class="nav" aria-label="Разделы">
+    <a href="#games">Игры</a>
+    <a href="#crew">Компания</a>
+    <a href="#records">Рекорды</a>
+  </nav>
+  <button class="icon-btn sound-toggle" type="button" aria-pressed="true" aria-label="Звук">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path class="s-body" d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path class="s-on" d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/><path class="s-off" d="M16 9.5l5 5M21 9.5l-5 5"/></svg>
+  </button>
+</header>
+
+<main>
+  <section class="hero" id="hero" aria-labelledby="hero-h">
+    <canvas id="hero-gl" aria-hidden="true"></canvas>
+    <div class="hero-fallback" aria-hidden="true"><span class="ghost">together</span><span class="chrome">play</span></div>
+    <h1 class="sr-only" id="hero-h">Just Play: мини-игры для друзей на одном экране</h1>
+
+    <div class="hero-top">
+      <p class="micro">Сборник мини-игр /<br>для своей компании</p>
+      <dl class="hero-stats">
+        <div><dt class="micro">Игр</dt><dd>06</dd></div>
+        <div><dt class="micro">В составе</dt><dd id="stat-players">02</dd></div>
+        <div><dt class="micro">Сыграно</dt><dd id="stat-played">00</dd></div>
+      </dl>
+    </div>
+
+    <div class="hero-foot">
+      <p class="hero-lede">Шесть мини-игр, чтобы зарубиться с друзьями на одном экране. Без регистрации и загрузок: открыл, позвал своих, играешь.</p>
+      <p class="hero-hint micro" aria-hidden="true">Поводи курсором,<br>это стекло</p>
+      <a class="cta" href="#games">
+        <span class="arrow-circle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span>
+        <span>Выбрать игру</span>
+      </a>
+    </div>
+  </section>
+
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <span>Понг</span><i>✳</i><span>Четыре в ряд</span><i>✳</i><span>Реакция</span><i>✳</i><span>Мемори</span><i>✳</i><span>Змейка</span><i>✳</i><span>Крокодил</span><i>✳</i>
+      <span>Понг</span><i>✳</i><span>Четыре в ряд</span><i>✳</i><span>Реакция</span><i>✳</i><span>Мемори</span><i>✳</i><span>Змейка</span><i>✳</i><span>Крокодил</span><i>✳</i>
+    </div>
+  </div>
+
+  <section class="section" id="games" aria-labelledby="games-h">
+    <div class="section-head">
+      <h2 class="aura" id="games-h">Игры</h2>
+      <p class="section-note">Жми на карточку или цифру от 1 до 6. Правила, режимы и выбор игроков внутри каждой игры.</p>
+    </div>
+
+    <div class="grid">
+      <article class="game" data-game="pong" data-key="1">
+        <div class="game-light" aria-hidden="true"><i class="l1"></i><i class="l2"></i><i class="l3"></i></div>
+        <button class="game-glass" type="button">
+          <span class="g-top"><span class="micro">Дуэль /<br>одна клавиатура</span><span class="g-count">1–2 игрока</span></span>
+          <span class="g-body"><span class="g-title">Понг.</span><span class="g-desc">Классика с отдачей. Мяч разгоняется после каждого удара, а бот не прощает пропусков.</span></span>
+          <span class="g-foot"><span class="arrow-circle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span class="g-leader micro" data-leader>клавиша 1</span><svg class="asterisk" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5v19M3.8 7.25l16.4 9.5M3.8 16.75l16.4-9.5"/></svg></span>
+        </button>
+      </article>
+
+      <article class="game" data-game="four" data-key="2">
+        <div class="game-light" aria-hidden="true"><i class="l1"></i><i class="l2"></i><i class="l3"></i></div>
+        <button class="game-glass" type="button">
+          <span class="g-top"><span class="micro">Тактика /<br>ход за ходом</span><span class="g-count">1–2 игрока</span></span>
+          <span class="g-body"><span class="g-title">Четыре в ряд.</span><span class="g-desc">Роняй фишки и собери линию из четырёх раньше соперника. Бот считает на пять ходов вперёд.</span></span>
+          <span class="g-foot"><span class="arrow-circle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span class="g-leader micro" data-leader>клавиша 2</span><svg class="asterisk" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5v19M3.8 7.25l16.4 9.5M3.8 16.75l16.4-9.5"/></svg></span>
+        </button>
+      </article>
+
+      <article class="game" data-game="reaction" data-key="3">
+        <div class="game-light" aria-hidden="true"><i class="l1"></i><i class="l2"></i><i class="l3"></i></div>
+        <button class="game-glass" type="button">
+          <span class="g-top"><span class="micro">Скорость /<br>кто первый</span><span class="g-count">1–2 игрока</span></span>
+          <span class="g-body"><span class="g-title">Реакция.</span><span class="g-desc">Ждёшь сигнал и жмёшь быстрее друга. Нажал раньше времени, значит очко сопернику.</span></span>
+          <span class="g-foot"><span class="arrow-circle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span class="g-leader micro" data-leader>клавиша 3</span><svg class="asterisk" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5v19M3.8 7.25l16.4 9.5M3.8 16.75l16.4-9.5"/></svg></span>
+        </button>
+      </article>
+
+      <article class="game" data-game="memory" data-key="4">
+        <div class="game-light" aria-hidden="true"><i class="l1"></i><i class="l2"></i><i class="l3"></i></div>
+        <button class="game-glass" type="button">
+          <span class="g-top"><span class="micro">Память /<br>ищи пары</span><span class="g-count">1–2 игрока</span></span>
+          <span class="g-body"><span class="g-title">Мемори.</span><span class="g-desc">Открывай карточки по две и запоминай, где что лежит. Нашёл пару, ходи ещё раз.</span></span>
+          <span class="g-foot"><span class="arrow-circle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span class="g-leader micro" data-leader>клавиша 4</span><svg class="asterisk" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5v19M3.8 7.25l16.4 9.5M3.8 16.75l16.4-9.5"/></svg></span>
+        </button>
+      </article>
+
+      <article class="game" data-game="snake" data-key="5">
+        <div class="game-light" aria-hidden="true"><i class="l1"></i><i class="l2"></i><i class="l3"></i></div>
+        <button class="game-glass" type="button">
+          <span class="g-top"><span class="micro">Аркада /<br>на выживание</span><span class="g-count">1–2 игрока</span></span>
+          <span class="g-body"><span class="g-title">Змейка.</span><span class="g-desc">Собирай огоньки и расти. Вдвоём на одном поле побеждает тот, кто продержится дольше.</span></span>
+          <span class="g-foot"><span class="arrow-circle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span class="g-leader micro" data-leader>клавиша 5</span><svg class="asterisk" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5v19M3.8 7.25l16.4 9.5M3.8 16.75l16.4-9.5"/></svg></span>
+        </button>
+      </article>
+
+      <article class="game" data-game="croc" data-key="6">
+        <div class="game-light" aria-hidden="true"><i class="l1"></i><i class="l2"></i><i class="l3"></i></div>
+        <button class="game-glass" type="button">
+          <span class="g-top"><span class="micro">Вечеринка /<br>команда на команду</span><span class="g-count">от 4 человек</span></span>
+          <span class="g-body"><span class="g-title">Крокодил.</span><span class="g-desc">Показываешь слово без слов, твоя команда угадывает. Минута на раунд, шесть колод.</span></span>
+          <span class="g-foot"><span class="arrow-circle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span class="g-leader micro" data-leader>клавиша 6</span><svg class="asterisk" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5v19M3.8 7.25l16.4 9.5M3.8 16.75l16.4-9.5"/></svg></span>
+        </button>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="crew" aria-labelledby="crew-h">
+    <div class="section-head">
+      <h2 class="aura" id="crew-h">Компания</h2>
+      <p class="section-note">Добавь всех, кто играет. Имена и цвета попадут в игры и в таблицу рекордов. Хранится только в этом браузере.</p>
+    </div>
+
+    <div class="crew-grid">
+      <div class="panel roster">
+        <div class="panel-top"><span class="micro">Состав</span><span class="micro" id="roster-count">2 / 12</span></div>
+        <ul class="roster-list" id="roster"></ul>
+        <form class="roster-add" id="roster-form" autocomplete="off">
+          <label class="sr-only" for="roster-name">Имя игрока</label>
+          <input class="field-input" id="roster-name" name="name" maxlength="18" placeholder="Имя друга">
+          <button class="btn primary" type="submit">Добавить</button>
+          <button class="btn" type="button" id="roster-random">Случайный ник</button>
+        </form>
+        <p class="micro roster-tip">Имя меняется прямо в списке, цвет по клику на кружок.</p>
+      </div>
+
+      <div class="panel wheel-panel">
+        <div class="panel-top"><span class="micro">Рулетка</span><span class="micro">кто начинает / кто идёт за пиццей</span></div>
+        <div class="wheel-wrap">
+          <canvas id="wheel" width="420" height="420" aria-label="Колесо с именами игроков"></canvas>
+          <span class="wheel-pin" aria-hidden="true"></span>
+        </div>
+        <div class="wheel-foot">
+          <p class="wheel-result" id="wheel-result" aria-live="polite">Крутани, и колесо выберет одного из вас</p>
+          <button class="btn primary" type="button" id="wheel-spin">Крутить</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="records" aria-labelledby="records-h">
+    <div class="section-head">
+      <h2 class="aura" id="records-h">Рекорды</h2>
+      <p class="section-note">Победы в дуэлях и лучшие результаты в одиночных режимах. Бот тоже считается, если кого-то обыграл.</p>
+    </div>
+
+    <div class="best-row" id="best-row"></div>
+
+    <div class="panel board">
+      <div class="board-scroll">
+        <table class="board-table" id="board">
+          <thead>
+            <tr><th scope="col">#</th><th scope="col">Игрок</th><th scope="col">Победы</th><th scope="col">Понг</th><th scope="col">4 в ряд</th><th scope="col">Реакция</th><th scope="col">Мемори</th><th scope="col">Змейка</th><th scope="col">Крокодил</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="board-foot">
+        <span class="micro" id="board-note">Сыграно партий: 0</span>
+        <span class="board-actions">
+          <button class="btn small" type="button" id="board-reset">Обнулить рекорды</button>
+          <span class="board-confirm" id="board-confirm" hidden>
+            <span class="micro">Стереть все победы и рекорды?</span>
+            <button class="btn small danger" type="button" id="board-yes">Стереть</button>
+            <button class="btn small" type="button" id="board-no">Отмена</button>
+          </span>
+        </span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="foot-word" aria-hidden="true"><span class="ghost">play</span><span class="chrome">again</span></div>
+  <div class="foot-row">
+    <span class="micro">just play / собрано для своих</span>
+    <span class="micro"><kbd>1</kbd>–<kbd>6</kbd> запуск игры · <kbd>Esc</kbd> выход</span>
+    <a class="micro" href="#hero">Наверх ↑</a>
+  </div>
+</footer>
+
+<div class="arena" id="arena" role="dialog" aria-modal="true" aria-labelledby="arena-title" hidden>
+  <div class="arena-bg" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="arena-bar">
+    <button class="icon-btn" type="button" id="arena-back" aria-label="Назад в хаб">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+    </button>
+    <div class="arena-title"><span class="micro" id="arena-kicker"></span><b id="arena-title"></b></div>
+    <div class="arena-hud" id="arena-hud" aria-live="polite"></div>
+    <button class="icon-btn sound-toggle" type="button" aria-pressed="true" aria-label="Звук">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="s-body" d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path class="s-on" d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/><path class="s-off" d="M16 9.5l5 5M21 9.5l-5 5"/></svg>
+    </button>
+  </div>
+  <div class="arena-stage"><div class="arena-play" id="arena-play"></div></div>
+  <div class="arena-panel" id="arena-panel" hidden></div>
+</div>
+
+<canvas id="fx" aria-hidden="true"></canvas>
+<div class="grain" aria-hidden="true"></div>
+
+<script src="js/core.js"></script>
+<script src="js/arena.js"></script>
+<script src="js/games/pong.js"></script>
+<script src="js/games/four.js"></script>
+<script src="js/games/reaction.js"></script>
+<script src="js/games/memory.js"></script>
+<script src="js/games/snake.js"></script>
+<script src="js/games/croc.js"></script>
+<script src="js/hub.js"></script>
+<script src="js/hero.js"></script>
+</body>
+</html>
